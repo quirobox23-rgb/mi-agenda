@@ -5,6 +5,7 @@ import { partesLocales, localADate, fechaBonita, sumarDias } from "./tiempo.js";
 
 const MIN = 60 * 1000;
 const HORA_MANANA = "09:00";
+const HORA_MEDIODIA = "13:00";
 const HORA_NOCHE = "20:00";
 
 const ESQUEMA = [
@@ -43,6 +44,9 @@ const TEXTOS = {
     teQueda: "Te queda pendiente", nadaHoy: "☀️ No tienes nada para hoy",
     quieresApuntar: "¿Quieres apuntar algo? Abre la agenda y díselo.",
     loHasHecho: "🌙 ¿Lo has hecho?", marcalo: "Márcalo en la agenda cuando esté.",
+    nadaApuntadoHoy: "📝 Hoy no has apuntado nada", algoQueRecordar: "¿Tienes algo que recordar? Abre la agenda y díselo.",
+    nadaApuntadoHoyNoche: "🌙 Hoy no has apuntado nada", algoParaManana: "¿Tienes algo para mañana? Apúntalo ahora y te aviso.",
+    tampocoApuntado: "Y hoy no has apuntado nada nuevo.",
     prueba: "🔔 Aviso de prueba", funciona: "¡Funciona! Así te llegarán los recordatorios.",
   },
   ca: {
@@ -52,6 +56,9 @@ const TEXTOS = {
     teQueda: "Et queda pendent", nadaHoy: "☀️ No tens res per avui",
     quieresApuntar: "Vols apuntar alguna cosa? Obre l'agenda i digues-ho.",
     loHasHecho: "🌙 Ho has fet?", marcalo: "Marca-ho a l'agenda quan estigui fet.",
+    nadaApuntadoHoy: "📝 Avui no has apuntat res", algoQueRecordar: "Tens alguna cosa per recordar? Obre l'agenda i digues-ho.",
+    nadaApuntadoHoyNoche: "🌙 Avui no has apuntat res", algoParaManana: "Tens alguna cosa per demà? Apunta-ho ara i t'avisaré.",
+    tampocoApuntado: "I avui no has apuntat res de nou.",
     prueba: "🔔 Avís de prova", funciona: "Funciona! Així t'arribaran els recordatoris.",
   },
 };
@@ -127,12 +134,14 @@ async function cadaMinuto(env) {
     await notificar(env, a, `⏰ ${titulo}`, texto).catch((e) => console.error("Aviso falló", e));
   }
 
-  // Resumen de la mañana y repaso de la noche, una vez al día por persona.
+  // Resumen de la mañana, recordatorio de mediodía y repaso de la noche, una vez al día por persona.
   const { results: usuarios } = await db.prepare(
     "SELECT * FROM usuarios WHERE suscripcion IS NOT NULL OR wa_clave IS NOT NULL").all();
   for (const u of usuarios) {
     const { fecha: hoy, hora } = partesLocales(ahora, u.zona);
-    const tipo = hora >= HORA_MANANA && hora < "10:00" ? "manana" : hora >= HORA_NOCHE && hora < "21:00" ? "noche" : null;
+    const tipo = hora >= HORA_MANANA && hora < "10:00" ? "manana"
+      : hora >= HORA_MEDIODIA && hora < "14:00" ? "mediodia"
+      : hora >= HORA_NOCHE && hora < "21:00" ? "noche" : null;
     if (!tipo) continue;
     const reservado = await db.prepare("INSERT OR IGNORE INTO diario (uid, fecha, tipo) VALUES (?, ?, ?)").bind(u.uid, hoy, tipo).run();
     if (!reservado.meta.changes) continue;
@@ -142,6 +151,10 @@ async function cadaMinuto(env) {
     const deHoy = items.filter((i) => i.fecha === hoy);
     const tareas = items.filter((i) => i.tipo === "tarea" && i.fecha !== hoy);
     const tx = textos(u);
+    // ¿Ha apuntado algo hoy? (creado se guarda en UTC como "YYYY-MM-DD HH:MM:SS")
+    const inicioDia = localADate(hoy, "00:00", u.zona).toISOString().slice(0, 19).replace("T", " ");
+    const apuntadoHoy = (await db.prepare("SELECT COUNT(*) AS n FROM items WHERE uid = ? AND creado >= ?")
+      .bind(u.uid, inicioDia).first()).n > 0;
     const nombres = (lista) => lista.slice(0, 4).map((i) => (i.hora ? `${i.hora} ${i.titulo}` : i.titulo)).join(" · ") +
       (lista.length > 4 ? tx.mas(lista.length - 4) : "");
 
@@ -149,9 +162,15 @@ async function cadaMinuto(env) {
       if (deHoy.length) await notificar(env, u, tx.hoyTienes, nombres(deHoy) + (tareas.length ? `\n${tx.pendiente}: ${nombres(tareas)}` : ""));
       else if (tareas.length) await notificar(env, u, tx.nadaApuntado, `${tx.teQueda}: ${nombres(tareas)}`);
       else await notificar(env, u, tx.nadaHoy, tx.quieresApuntar);
+    } else if (tipo === "mediodia") {
+      if (!apuntadoHoy) await notificar(env, u, tx.nadaApuntadoHoy, tx.algoQueRecordar);
     } else {
       const sinHacer = items.filter((i) => i.tipo === "tarea");
-      if (sinHacer.length) await notificar(env, u, tx.loHasHecho, `${nombres(sinHacer)}\n${tx.marcalo}`);
+      if (sinHacer.length) {
+        await notificar(env, u, tx.loHasHecho, `${nombres(sinHacer)}\n${tx.marcalo}` + (apuntadoHoy ? "" : `\n${tx.tampocoApuntado}`));
+      } else if (!apuntadoHoy) {
+        await notificar(env, u, tx.nadaApuntadoHoyNoche, tx.algoParaManana);
+      }
     }
   }
 

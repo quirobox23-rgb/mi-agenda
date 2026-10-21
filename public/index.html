@@ -120,6 +120,40 @@ textarea {
 }
 .hecho .marcar { background: var(--ok); border-color: var(--ok); }
 .borrar { flex: none; border: none; background: transparent; color: var(--tinta-suave); width: 36px; height: 36px; border-radius: 8px; font-size: 1.3rem; }
+/* Calendario desplegable */
+.calendario { background: var(--hoja); border: 1px solid var(--linea); border-radius: var(--radio); }
+.calendario > summary { padding: 14px 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+.calendario > summary svg { width: 22px; height: 22px; color: var(--azul); flex: none; }
+.cal-cuerpo { padding: 0 12px 14px; display: grid; gap: 12px; }
+.cal-barra { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.cal-vistas { display: flex; border: 1px solid var(--linea); border-radius: 999px; overflow: hidden; }
+.cal-vistas button { border: none; background: transparent; color: var(--tinta-suave); padding: 6px 14px; }
+.cal-vistas button[aria-pressed="true"] { background: var(--azul); color: var(--hoja); font-weight: 700; }
+.cal-nav { display: flex; align-items: center; gap: 4px; }
+.cal-nav button { border: 1px solid var(--linea); background: transparent; color: var(--tinta); width: 36px; height: 36px; border-radius: 10px; font-size: 1.1rem; }
+.cal-titulo { font-family: var(--f-titulo); font-weight: 600; min-width: 0; text-align: center; flex: 1; }
+.cal-rejilla { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.cal-cabeza { text-align: center; font-size: 0.75rem; letter-spacing: 0.04em; color: var(--tinta-suave); padding-bottom: 2px; }
+.cal-dia {
+  border: 1px solid transparent; background: var(--papel); color: var(--tinta); border-radius: 10px;
+  min-height: 46px; padding: 4px 2px; display: grid; justify-items: center; align-content: start; gap: 3px;
+  font-variant-numeric: tabular-nums;
+}
+.cal-dia.fuera { opacity: 0.4; }
+.cal-dia.hoy { border-color: var(--azul); font-weight: 700; }
+.cal-dia[aria-pressed="true"] { background: var(--azul); color: var(--hoja); }
+.cal-puntos { display: flex; gap: 3px; min-height: 6px; }
+.cal-puntos i { width: 6px; height: 6px; border-radius: 50%; background: var(--sol); }
+.cal-semana { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.cal-semana > li { display: grid; grid-template-columns: 4.6em minmax(0, 1fr); gap: 10px; padding: 8px 10px; background: var(--papel); border-radius: 10px; }
+.cal-semana > li.hoy { outline: 2px solid var(--azul); }
+.cal-semana .cal-fecha { font-weight: 700; color: var(--azul); line-height: 1.2; }
+.cal-semana .cal-fecha small { display: block; font-weight: 400; color: var(--tinta-suave); text-transform: capitalize; }
+.cal-cosas { margin: 0; padding: 0; list-style: none; display: grid; gap: 2px; min-width: 0; overflow-wrap: anywhere; }
+.cal-cosas .nada { color: var(--tinta-suave); }
+.cal-detalle { background: var(--papel); border-radius: 10px; padding: 10px 12px; display: grid; gap: 4px; }
+.cal-detalle strong::first-letter { text-transform: uppercase; }
+.cal-detalle strong { display: block; }
 .vacio { background: var(--hoja); border: 1px dashed var(--linea); border-radius: var(--radio); padding: 18px; color: var(--tinta-suave); margin: 0; }
 
 /* Panel de avisos */
@@ -220,6 +254,24 @@ code { background: var(--azul-claro); padding: 1px 6px; border-radius: 6px; font
     </div>
   </section>
 
+  <details class="calendario" id="calendario">
+    <summary><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span data-t="verCalendario"></span></summary>
+    <div class="cal-cuerpo">
+      <div class="cal-barra">
+        <div class="cal-vistas" role="group">
+          <button id="cal-semana" data-t="semana" aria-pressed="true"></button>
+          <button id="cal-mes" data-t="mes" aria-pressed="false"></button>
+        </div>
+        <div class="cal-nav">
+          <button id="cal-antes" data-t-aria="anterior">‹</button>
+          <button id="cal-despues" data-t-aria="siguiente">›</button>
+        </div>
+      </div>
+      <div class="cal-titulo" id="cal-titulo"></div>
+      <div id="cal-contenido"></div>
+    </div>
+  </details>
+
   <div id="agenda"></div>
 </main>
 <div class="toast" id="toast" role="status" hidden></div>
@@ -275,6 +327,8 @@ const TEXTOS = {
     noSalido: "El aviso no ha salido", movil: "Móvil", noEnviar: "No se ha podido enviar", otraVez: "Inténtalo otra vez en un momento",
     waGuardado: "WhatsApp guardado. Usa «Mandarme un aviso de prueba» para comprobarlo.", waQuitado: "WhatsApp quitado.",
     errorPreparar: "No se han podido preparar los avisos: ", esHoy: "Es hoy", aLasMay: "A las",
+    verCalendario: "Ver calendario", semana: "Semana", mes: "Mes", anterior: "Anterior", siguiente: "Siguiente",
+    iniciales: ["L", "M", "X", "J", "V", "S", "D"], nadaApuntado: "Nada apuntado",
     ejemplosDemo: ["Recoger a Lucía del cole (ejemplo)", "Dentista (ejemplo)", "Comprar pan (ejemplo)"],
     dias: ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"],
     meses: ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"],
@@ -326,6 +380,8 @@ const TEXTOS = {
     noSalido: "L'avís no ha sortit", movil: "Mòbil", noEnviar: "No s'ha pogut enviar", otraVez: "Torna-ho a provar d'aquí a una estona",
     waGuardado: "WhatsApp desat. Fes servir «Envia'm un avís de prova» per comprovar-ho.", waQuitado: "WhatsApp tret.",
     errorPreparar: "No s'han pogut preparar els avisos: ", esHoy: "És avui", aLasMay: "A les",
+    verCalendario: "Veure el calendari", semana: "Setmana", mes: "Mes", anterior: "Anterior", siguiente: "Següent",
+    iniciales: ["Dl", "Dt", "Dc", "Dj", "Dv", "Ds", "Dg"], nadaApuntado: "Res apuntat",
     ejemplosDemo: ["Recollir la Lucía de l'escola (exemple)", "Dentista (exemple)", "Comprar pa (exemple)"],
     dias: ["diumenge", "dilluns", "dimarts", "dimecres", "dijous", "divendres", "dissabte"],
     meses: ["gener", "febrer", "març", "abril", "maig", "juny", "juliol", "agost", "setembre", "octubre", "novembre", "desembre"],
@@ -423,7 +479,83 @@ async function cargar() {
   pintar();
 }
 
+// ---------- Calendario de la semana y del mes ----------
+let vistaCal = leerLocal("vistaCal", "semana");
+let refCal = isoHoy(); // un día dentro de la semana o el mes que se ve
+let diaElegido = isoHoy();
+const lunesDe = (iso) => { const d = aDate(iso); return sumarDias(iso, -((d.getDay() + 6) % 7)); };
+const cosasDe = (iso) => items.filter((i) => i.fecha === iso).sort((a, b) => (a.hora || "99").localeCompare(b.hora || "99"));
+const textoCosa = (i) => `${i.hora ? i.hora + " " : ""}${i.titulo}`;
+
+function listaCosas(iso) {
+  const ul = document.createElement("ul"); ul.className = "cal-cosas";
+  const cosas = cosasDe(iso);
+  if (!cosas.length) { const li = document.createElement("li"); li.className = "nada"; li.textContent = t("nadaApuntado"); ul.append(li); }
+  for (const i of cosas) { const li = document.createElement("li"); li.textContent = textoCosa(i); if (i.hecho) li.style.textDecoration = "line-through"; ul.append(li); }
+  return ul;
+}
+
+function pintarCalendario() {
+  const hoy = isoHoy();
+  $("cal-semana").setAttribute("aria-pressed", vistaCal === "semana");
+  $("cal-mes").setAttribute("aria-pressed", vistaCal === "mes");
+  const cont = $("cal-contenido");
+  cont.replaceChildren();
+  if (vistaCal === "semana") {
+    const lunes = lunesDe(refCal);
+    const domingo = sumarDias(lunes, 6);
+    const [dl, dd] = [aDate(lunes), aDate(domingo)];
+    $("cal-titulo").textContent = `${dl.getDate()} ${t("meses")[dl.getMonth()].slice(0, 3)} – ${dd.getDate()} ${t("meses")[dd.getMonth()].slice(0, 3)} ${dd.getFullYear()}`;
+    const ul = document.createElement("ul"); ul.className = "cal-semana";
+    for (let n = 0; n < 7; n++) {
+      const iso = sumarDias(lunes, n);
+      const d = aDate(iso);
+      const li = document.createElement("li");
+      if (iso === hoy) li.classList.add("hoy");
+      const f = document.createElement("div"); f.className = "cal-fecha";
+      const sm = document.createElement("small"); sm.textContent = t("dias")[d.getDay()];
+      f.append(sm, document.createTextNode(d.getDate()));
+      li.append(f, listaCosas(iso));
+      ul.append(li);
+    }
+    cont.append(ul);
+    return;
+  }
+  // Mes
+  const r = aDate(refCal);
+  $("cal-titulo").textContent = `${t("meses")[r.getMonth()].replace(/^./, (c) => c.toUpperCase())} ${r.getFullYear()}`;
+  const primero = isoHoy(new Date(r.getFullYear(), r.getMonth(), 1));
+  const inicio = lunesDe(primero);
+  const rejilla = document.createElement("div"); rejilla.className = "cal-rejilla";
+  for (const ini of t("iniciales")) { const c = document.createElement("div"); c.className = "cal-cabeza"; c.textContent = ini; rejilla.append(c); }
+  for (let n = 0; n < 42; n++) {
+    const iso = sumarDias(inicio, n);
+    const d = aDate(iso);
+    if (n >= 35 && d.getMonth() !== r.getMonth()) break;
+    const b = document.createElement("button");
+    b.className = "cal-dia" + (d.getMonth() !== r.getMonth() ? " fuera" : "") + (iso === hoy ? " hoy" : "");
+    b.setAttribute("aria-pressed", iso === diaElegido);
+    b.setAttribute("aria-label", bonita(iso));
+    const num = document.createElement("span"); num.textContent = d.getDate();
+    const puntos = document.createElement("span"); puntos.className = "cal-puntos";
+    cosasDe(iso).slice(0, 3).forEach(() => puntos.append(document.createElement("i")));
+    b.append(num, puntos);
+    b.onclick = () => { diaElegido = iso; pintarCalendario(); };
+    rejilla.append(b);
+  }
+  const detalle = document.createElement("div"); detalle.className = "cal-detalle";
+  const titulo = document.createElement("strong"); titulo.textContent = bonita(diaElegido);
+  detalle.append(titulo, listaCosas(diaElegido));
+  cont.append(rejilla, detalle);
+}
+
+$("cal-semana").onclick = () => { vistaCal = "semana"; guardarLocal("vistaCal", vistaCal); pintarCalendario(); };
+$("cal-mes").onclick = () => { vistaCal = "mes"; guardarLocal("vistaCal", vistaCal); pintarCalendario(); };
+$("cal-antes").onclick = () => { refCal = vistaCal === "semana" ? sumarDias(refCal, -7) : isoHoy(new Date(aDate(refCal).getFullYear(), aDate(refCal).getMonth() - 1, 1)); pintarCalendario(); };
+$("cal-despues").onclick = () => { refCal = vistaCal === "semana" ? sumarDias(refCal, 7) : isoHoy(new Date(aDate(refCal).getFullYear(), aDate(refCal).getMonth() + 1, 1)); pintarCalendario(); };
+
 function pintar() {
+  pintarCalendario();
   const hoy = isoHoy();
   $("hoy-texto").textContent = bonita(hoy).replace(/^./, (c) => c.toUpperCase());
   const grupos = new Map();
