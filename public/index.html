@@ -130,6 +130,8 @@ textarea {
 .panel details > * + * { margin-top: 10px; }
 code { background: var(--azul-claro); padding: 1px 6px; border-radius: 6px; font-size: 0.92em; overflow-wrap: anywhere; }
 .estado { font-size: 0.95rem; }
+.estado.importante { background: color-mix(in srgb, var(--sol) 22%, var(--hoja)); border: 1px solid var(--sol); border-radius: 12px; padding: 12px 14px; font-weight: 700; }
+.panel summary { padding-block: 4px; }
 
 .toast {
   position: fixed; left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px));
@@ -159,7 +161,7 @@ code { background: var(--azul-claro); padding: 1px 6px; border-radius: 6px; font
       <button class="principal" id="activar-push">Activar avisos</button>
       <button class="secundario" id="probar">Mandarme un aviso de prueba</button>
     </div>
-    <details>
+    <details id="det-iphone">
       <summary>Tengo iPhone</summary>
       <ol>
         <li>Abre esta página en <b>Safari</b>.</li>
@@ -168,7 +170,7 @@ code { background: var(--azul-claro); padding: 1px 6px; border-radius: 6px; font
         <li>Abre la agenda desde el icono nuevo y toca <b>Activar avisos</b>.</li>
       </ol>
     </details>
-    <details>
+    <details id="det-android">
       <summary>Tengo Android</summary>
       <ol>
         <li>Abre esta página en <b>Chrome</b>.</li>
@@ -467,8 +469,14 @@ async function prepararAvisos() {
   if (soporta) registro = await navigator.serviceWorker.register(`sw.js?uid=${uid}`);
   const esIphone = /iphone|ipad/i.test(navigator.userAgent);
   if (!soporta) {
-    estadoAvisos(!!usuario.whatsapp, esIphone ? "En iPhone, primero añade la agenda a la pantalla de inicio (mira abajo) y ábrela desde ahí." : "Este navegador no admite avisos. Prueba con Chrome.");
+    estadoAvisos(!!usuario.whatsapp, esIphone
+      ? "Así no te pueden llegar avisos. Abre la agenda en Safari, añádela a la pantalla de inicio y ábrela desde el icono nuevo. Te lo explico aquí debajo."
+      : "Así no te pueden llegar avisos. Abre la agenda en Chrome escribiendo la dirección. Te lo explico aquí debajo.");
+    $("estado-push").classList.add("importante");
+    $(esIphone ? "det-iphone" : "det-android").open = true;
     $("activar-push").hidden = true;
+    $("probar").hidden = !usuario.whatsapp;
+    $("panel").hidden = false;
   } else {
     const sub = await registro.pushManager.getSubscription();
     if (sub && Notification.permission === "granted") {
