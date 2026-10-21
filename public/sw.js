@@ -11,7 +11,7 @@ self.addEventListener("push", (evento) => {
       const r = await fetch(`/api/bandeja?uid=${uid}`, { cache: "no-store" });
       mensajes = await r.json();
     } catch {}
-    if (!mensajes.length) mensajes = [{ id: "x", titulo: "Mi agenda", texto: "Tienes un aviso. Toca para verlo." }];
+    if (!mensajes.length) mensajes = [{ id: "x", titulo: "Mi agenda", texto: "Tienes un aviso · Tens un avís" }];
     for (const m of mensajes) {
       await self.registration.showNotification(m.titulo, {
         body: m.texto,

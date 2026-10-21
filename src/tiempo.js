@@ -28,15 +28,24 @@ export function localADate(fecha, hora = "00:00", zona = ZONA) {
   return new Date(t);
 }
 
-const DIAS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
-const MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto",
-  "septiembre", "octubre", "noviembre", "diciembre"];
+const NOMBRES = {
+  es: {
+    dias: ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"],
+    meses: ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"],
+  },
+  ca: {
+    dias: ["diumenge", "dilluns", "dimarts", "dimecres", "dijous", "divendres", "dissabte"],
+    meses: ["gener", "febrer", "març", "abril", "maig", "juny", "juliol", "agost", "setembre", "octubre", "novembre", "desembre"],
+  },
+};
 
-// "jueves 23 de octubre"
-export function fechaBonita(fecha) {
+// "jueves 23 de octubre" / "dijous 23 d'octubre"
+export function fechaBonita(fecha, idioma = "es") {
   const [y, m, d] = fecha.split("-").map(Number);
-  const dia = new Date(Date.UTC(y, m - 1, d)).getUTCDay();
-  return `${DIAS[dia]} ${d} de ${MESES[m - 1]}`;
+  const { dias, meses } = NOMBRES[idioma] || NOMBRES.es;
+  const mes = meses[m - 1];
+  const de = idioma === "ca" && /^[aeiou]/.test(mes) ? "d'" : "de ";
+  return `${dias[new Date(Date.UTC(y, m - 1, d)).getUTCDay()]} ${d} ${de}${mes}`;
 }
 
 export function sumarDias(fecha, n) {

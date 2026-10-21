@@ -28,8 +28,34 @@ let esquemaListo = false;
 async function prepararBD(db) {
   if (esquemaListo) return;
   await db.batch(ESQUEMA.map((s) => db.prepare(s)));
+  // Columnas añadidas después de la primera versión.
+  await db.prepare("ALTER TABLE usuarios ADD COLUMN idioma TEXT NOT NULL DEFAULT 'es'").run().catch(() => {});
   esquemaListo = true;
 }
+
+// ---------- Textos de los avisos en castellano y catalán ----------
+
+const TEXTOS = {
+  es: {
+    esHoy: "Es hoy.", ahora: (h) => `Ahora (${h})`, enMinutos: (n, h) => `En ${n} minutos, a las ${h}`,
+    hoy: "Hoy", manana: "Mañana", aLas: "a las", mas: (n) => ` y ${n} más`,
+    hoyTienes: "☀️ Hoy tienes", pendiente: "Pendiente", nadaApuntado: "☀️ Nada apuntado para hoy",
+    teQueda: "Te queda pendiente", nadaHoy: "☀️ No tienes nada para hoy",
+    quieresApuntar: "¿Quieres apuntar algo? Abre la agenda y díselo.",
+    loHasHecho: "🌙 ¿Lo has hecho?", marcalo: "Márcalo en la agenda cuando esté.",
+    prueba: "🔔 Aviso de prueba", funciona: "¡Funciona! Así te llegarán los recordatorios.",
+  },
+  ca: {
+    esHoy: "És avui.", ahora: (h) => `Ara (${h})`, enMinutos: (n, h) => `D'aquí a ${n} minuts, a les ${h}`,
+    hoy: "Avui", manana: "Demà", aLas: "a les", mas: (n) => ` i ${n} més`,
+    hoyTienes: "☀️ Avui tens", pendiente: "Pendent", nadaApuntado: "☀️ Res apuntat per avui",
+    teQueda: "Et queda pendent", nadaHoy: "☀️ No tens res per avui",
+    quieresApuntar: "Vols apuntar alguna cosa? Obre l'agenda i digues-ho.",
+    loHasHecho: "🌙 Ho has fet?", marcalo: "Marca-ho a l'agenda quan estigui fet.",
+    prueba: "🔔 Avís de prova", funciona: "Funciona! Així t'arribaran els recordatoris.",
+  },
+};
+const textos = (usuario) => TEXTOS[usuario.idioma] || TEXTOS.es;
 
 // ---------- Cuándo avisar ----------
 
@@ -52,13 +78,14 @@ export function planificarAvisos(item, zona, ahora = new Date()) {
 }
 
 function textoAviso(item, zona, ahora) {
-  if (!item.hora) return { titulo: item.titulo, texto: "Es hoy." };
+  const tx = textos(item);
+  if (!item.hora) return { titulo: item.titulo, texto: tx.esHoy };
   const minutos = Math.round((localADate(item.fecha, item.hora, zona) - ahora) / MIN);
-  if (minutos <= 1) return { titulo: item.titulo, texto: `Ahora (${item.hora})` };
-  if (minutos < 120) return { titulo: item.titulo, texto: `En ${minutos} minutos, a las ${item.hora}` };
+  if (minutos <= 1) return { titulo: item.titulo, texto: tx.ahora(item.hora) };
+  if (minutos < 120) return { titulo: item.titulo, texto: tx.enMinutos(minutos, item.hora) };
   const hoy = partesLocales(ahora, zona).fecha;
-  const dia = item.fecha === hoy ? "Hoy" : item.fecha === sumarDias(hoy, 1) ? "Mañana" : fechaBonita(item.fecha);
-  return { titulo: item.titulo, texto: `${dia} a las ${item.hora}` };
+  const dia = item.fecha === hoy ? tx.hoy : item.fecha === sumarDias(hoy, 1) ? tx.manana : fechaBonita(item.fecha, item.idioma);
+  return { titulo: item.titulo, texto: `${dia} ${tx.aLas} ${item.hora}` };
 }
 
 // ---------- Enviar un aviso a una persona ----------
@@ -90,7 +117,7 @@ async function cadaMinuto(env) {
   const db = env.DB;
 
   const { results: vencidos } = await db.prepare(
-    `SELECT avisos.id AS aviso_id, items.*, usuarios.zona, usuarios.suscripcion, usuarios.wa_tel, usuarios.wa_clave
+    `SELECT avisos.id AS aviso_id, items.*, usuarios.zona, usuarios.idioma, usuarios.suscripcion, usuarios.wa_tel, usuarios.wa_clave
      FROM avisos JOIN items ON items.id = avisos.item_id JOIN usuarios ON usuarios.uid = avisos.uid
      WHERE avisos.enviado = 0 AND avisos.cuando <= ? AND items.hecho = 0`
   ).bind(ahora.toISOString()).all();
@@ -114,16 +141,17 @@ async function cadaMinuto(env) {
       "SELECT * FROM items WHERE uid = ? AND hecho = 0 AND (fecha IS NULL OR fecha <= ?) ORDER BY hora IS NULL, hora").bind(u.uid, hoy).all();
     const deHoy = items.filter((i) => i.fecha === hoy);
     const tareas = items.filter((i) => i.tipo === "tarea" && i.fecha !== hoy);
+    const tx = textos(u);
     const nombres = (lista) => lista.slice(0, 4).map((i) => (i.hora ? `${i.hora} ${i.titulo}` : i.titulo)).join(" · ") +
-      (lista.length > 4 ? ` y ${lista.length - 4} más` : "");
+      (lista.length > 4 ? tx.mas(lista.length - 4) : "");
 
     if (tipo === "manana") {
-      if (deHoy.length) await notificar(env, u, "☀️ Hoy tienes", nombres(deHoy) + (tareas.length ? `\nPendiente: ${nombres(tareas)}` : ""));
-      else if (tareas.length) await notificar(env, u, "☀️ Nada apuntado para hoy", `Te queda pendiente: ${nombres(tareas)}`);
-      else await notificar(env, u, "☀️ No tienes nada para hoy", "¿Quieres apuntar algo? Abre la agenda y díselo.");
+      if (deHoy.length) await notificar(env, u, tx.hoyTienes, nombres(deHoy) + (tareas.length ? `\n${tx.pendiente}: ${nombres(tareas)}` : ""));
+      else if (tareas.length) await notificar(env, u, tx.nadaApuntado, `${tx.teQueda}: ${nombres(tareas)}`);
+      else await notificar(env, u, tx.nadaHoy, tx.quieresApuntar);
     } else {
       const sinHacer = items.filter((i) => i.tipo === "tarea");
-      if (sinHacer.length) await notificar(env, u, "🌙 ¿Lo has hecho?", `${nombres(sinHacer)}\nMárcalo en la agenda cuando esté.`);
+      if (sinHacer.length) await notificar(env, u, tx.loHasHecho, `${nombres(sinHacer)}\n${tx.marcalo}`);
     }
   }
 
@@ -166,6 +194,9 @@ async function api(request, env, url) {
     const zonaNueva = typeof cuerpo.zona === "string" && cuerpo.zona.length < 64 ? cuerpo.zona : zona;
     await db.prepare("INSERT OR IGNORE INTO usuarios (uid, zona) VALUES (?, ?)").bind(uid, zonaNueva).run();
     await db.prepare("UPDATE usuarios SET zona = ? WHERE uid = ?").bind(zonaNueva, uid).run();
+    if (cuerpo.idioma === "es" || cuerpo.idioma === "ca") {
+      await db.prepare("UPDATE usuarios SET idioma = ? WHERE uid = ?").bind(cuerpo.idioma, uid).run();
+    }
     if ("suscripcion" in cuerpo) {
       await db.prepare("UPDATE usuarios SET suscripcion = ? WHERE uid = ?")
         .bind(cuerpo.suscripcion ? JSON.stringify(cuerpo.suscripcion) : null, uid).run();
@@ -226,7 +257,8 @@ async function api(request, env, url) {
   }
 
   if (ruta === "/probar" && metodo === "POST") {
-    return json(await notificar(env, usuario, "🔔 Aviso de prueba", "¡Funciona! Así te llegarán los recordatorios."));
+    const tx = textos(usuario);
+    return json(await notificar(env, usuario, tx.prueba, tx.funciona));
   }
 
   return json({ error: "No encontrado" }, 404);

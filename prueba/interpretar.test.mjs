@@ -13,6 +13,24 @@ const casos = [
   ["mañana por la mañana análisis de sangre", { tipo: "cita", titulo: "Análisis de sangre", fecha: "2026-10-22", hora: "09:00" }],
   ["el 5 de noviembre cumpleaños de Juan", { tipo: "cita", titulo: "Cumpleaños de Juan", fecha: "2026-11-05", hora: null }],
   ["el lunes a las 10 menos cuarto entrevista", { tipo: "cita", titulo: "Entrevista", fecha: "2026-10-26", hora: "09:45" }],
+  // catalán
+  ["Cita metge demà a les 10", { tipo: "cita", titulo: "Cita metge", fecha: "2026-10-22", hora: "10:00" }],
+  ["reunió d'aquí a una hora", { tipo: "cita", titulo: "Reunió", fecha: "2026-10-21", hora: "11:40" }],
+  ["taller dijous", { tipo: "cita", titulo: "Taller", fecha: "2026-10-22", hora: null }],
+  ["he de comprar pa", { tipo: "tarea", titulo: "Comprar pa", fecha: null, hora: null }],
+  ["Recorda'm que tinc dentista divendres a dos quarts de sis", { tipo: "cita", titulo: "Dentista", fecha: "2026-10-23", hora: "17:30" }],
+  ["sopar amb l'Anna dissabte a les 9 del vespre", { tipo: "cita", titulo: "Sopar amb l'Anna", fecha: "2026-10-24", hora: "21:00" }],
+  ["demà al matí anàlisi de sang", { tipo: "cita", titulo: "Anàlisi de sang", fecha: "2026-10-22", hora: "09:00" }],
+  ["el 5 de novembre aniversari d'en Joan", { tipo: "cita", titulo: "Aniversari d'en Joan", fecha: "2026-11-05", hora: null }],
+  ["el dilluns que ve a les 10 menys quart entrevista", { tipo: "cita", titulo: "Entrevista", fecha: "2026-10-26", hora: "09:45" }],
+  ["aquesta tarda trucar a la mare", { tipo: "cita", titulo: "Trucar a la mare", fecha: "2026-10-21", hora: "17:00" }],
+  ["fisio passat demà a un quart d'onze", { tipo: "cita", titulo: "Fisio", fecha: "2026-10-23", hora: "10:15" }],
+  ["portar el cotxe al taller d'aquí a 3 dies", { tipo: "cita", titulo: "Portar el cotxe al taller", fecha: "2026-10-24", hora: null }],
 ];
-for (const [frase, esperado] of casos) assert.deepEqual(interpretar(frase, ahora), esperado, frase);
+let fallos = 0;
+for (const [frase, esperado] of casos) {
+  try { assert.deepEqual(interpretar(frase, ahora), esperado, frase); }
+  catch { fallos++; console.log("✗", frase, JSON.stringify(interpretar(frase, ahora))); }
+}
+if (fallos) process.exit(1);
 console.log(`✓ ${casos.length} frases entendidas bien`);

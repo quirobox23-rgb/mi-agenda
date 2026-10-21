@@ -64,6 +64,8 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
   border: 1px solid var(--linea); background: var(--hoja); color: var(--tinta);
   border-radius: 999px; padding: 8px 14px; display: flex; gap: 8px; align-items: center; white-space: nowrap;
 }
+.botones-cabecera { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.boton-idioma { border: 1px solid var(--linea); background: transparent; color: var(--tinta-suave); border-radius: 999px; padding: 8px 12px; font-size: 0.9rem; }
 .punto { width: 10px; height: 10px; border-radius: 50%; background: var(--alerta); }
 .punto.activo { background: var(--ok); }
 
@@ -146,89 +148,74 @@ code { background: var(--azul-claro); padding: 1px 6px; border-radius: 6px; font
 <main>
   <header class="cabecera">
     <div>
-      <h1>Mi agenda</h1>
+      <h1 data-t="titulo">Mi agenda</h1>
       <p id="hoy-texto"></p>
     </div>
-    <button class="boton-avisos" id="abrir-panel" aria-controls="panel"><span class="punto" id="punto"></span><span id="texto-avisos">Avisos</span></button>
+    <div class="botones-cabecera">
+      <button class="boton-idioma" id="cambiar-idioma" lang="ca">Català</button>
+      <button class="boton-avisos" id="abrir-panel" aria-controls="panel"><span class="punto" id="punto"></span><span id="texto-avisos">Avisos</span></button>
+    </div>
   </header>
 
-  <p class="aviso-modo" id="aviso-modo" hidden>Esto es una prueba: lo que apuntes se queda en este móvil y los avisos solo salen con la página abierta. En la versión instalada llegan aunque el móvil esté bloqueado.</p>
+  <p class="aviso-modo" id="aviso-modo" data-t="modoPrueba" hidden></p>
 
   <section class="panel" id="panel" hidden>
-    <h3>Avisos en el móvil</h3>
+    <h3 data-t="avisosMovil"></h3>
     <p class="estado" id="estado-push"></p>
     <div class="acciones">
-      <button class="principal" id="activar-push">Activar avisos</button>
-      <button class="secundario" id="probar">Mandarme un aviso de prueba</button>
+      <button class="principal" id="activar-push" data-t="activarAvisos"></button>
+      <button class="secundario" id="probar" data-t="probar"></button>
     </div>
     <details id="det-iphone">
-      <summary>Tengo iPhone</summary>
-      <ol>
-        <li>Abre esta página en <b>Safari</b>.</li>
-        <li>Toca el botón <b>Compartir</b> (el cuadrado con la flecha).</li>
-        <li>Elige <b>Añadir a pantalla de inicio</b>.</li>
-        <li>Abre la agenda desde el icono nuevo y toca <b>Activar avisos</b>.</li>
-      </ol>
+      <summary data-t="tengoIphone"></summary>
+      <ol data-t-html="pasosIphone"></ol>
     </details>
     <details id="det-android">
-      <summary>Tengo Android</summary>
-      <ol>
-        <li>Abre esta página en <b>Chrome</b>.</li>
-        <li>Toca <b>Activar avisos</b> y acepta.</li>
-        <li>Para tenerla como app: menú ⋮ → <b>Añadir a pantalla de inicio</b>.</li>
-      </ol>
+      <summary data-t="tengoAndroid"></summary>
+      <ol data-t-html="pasosAndroid"></ol>
     </details>
     <details>
-      <summary>Recibir también los avisos por WhatsApp (gratis)</summary>
-      <p>Usa CallMeBot, un servicio gratuito que te manda el WhatsApp a tu propio número. Se activa una vez:</p>
-      <ol>
-        <li>Entra en <b>callmebot.com</b> → WhatsApp y guarda en tus contactos el número que pone allí.</li>
-        <li>Mándale por WhatsApp este mensaje: <code>I allow callmebot to send me messages</code></li>
-        <li>Te contestará con una clave (<i>apikey</i>). Escríbela aquí:</li>
-      </ol>
+      <summary data-t="waTitulo"></summary>
+      <p data-t="waIntro"></p>
+      <ol data-t-html="waPasos"></ol>
       <div class="campos">
-        <label class="ancho">Tu número con prefijo <input id="wa-tel" inputmode="tel" placeholder="+34 600 000 000"></label>
-        <label class="ancho">Clave de CallMeBot <input id="wa-clave" inputmode="numeric" placeholder="123456"></label>
+        <label class="ancho"><span data-t="waNumero"></span> <input id="wa-tel" inputmode="tel" placeholder="+34 600 000 000"></label>
+        <label class="ancho"><span data-t="waClave"></span> <input id="wa-clave" inputmode="numeric" placeholder="123456"></label>
       </div>
-      <div class="acciones"><button class="secundario" id="guardar-wa">Guardar WhatsApp</button></div>
+      <div class="acciones"><button class="secundario" id="guardar-wa" data-t="waGuardar"></button></div>
     </details>
     <details>
-      <summary>Usar mi agenda en otro móvil</summary>
-      <p>Abre este enlace en el otro móvil y verás las mismas cosas. No se lo pases a nadie más.</p>
+      <summary data-t="otroMovil"></summary>
+      <p data-t="otroMovilTexto"></p>
       <p><code id="enlace-personal"></code></p>
-      <div class="acciones"><button class="secundario" id="copiar-enlace">Copiar enlace</button></div>
+      <div class="acciones"><button class="secundario" id="copiar-enlace" data-t="copiarEnlace"></button></div>
     </details>
   </section>
 
   <section class="dictar" aria-labelledby="etiqueta-frase">
-    <label id="etiqueta-frase" for="frase">¿Qué tienes que recordar?</label>
+    <label id="etiqueta-frase" for="frase" data-t="pregunta"></label>
     <div class="fila-entrada">
-      <textarea id="frase" rows="2" placeholder="Cita médico mañana a las 10"></textarea>
-      <button class="microfono" id="microfono" aria-label="Hablar">
+      <textarea id="frase" rows="2" data-t-ph="ejemploFrase"></textarea>
+      <button class="microfono" id="microfono" data-t-aria="hablar">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2.5" width="6" height="12" rx="3" fill="currentColor"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3.5"/></svg>
       </button>
     </div>
-    <p class="pista" id="pista-voz">Toca el micrófono y dilo como se lo dirías a alguien.</p>
-    <div class="ejemplos" id="ejemplos">
-      <button>Cita médico mañana a las 10</button>
-      <button>Reunión en 1 hora</button>
-      <button>Taller el jueves</button>
-      <button>Tengo que comprar pan</button>
-    </div>
+    <p class="pista" id="pista-voz"></p>
+    <div class="ejemplos" id="ejemplos"></div>
 
     <div class="previa" id="previa" hidden>
       <div class="campos">
-        <label class="ancho">Qué <input id="p-titulo"></label>
-        <label>Día <input id="p-fecha" type="date"></label>
-        <label>Hora <input id="p-hora" type="time"></label>
-        <label class="ancho">Es una
-          <select id="p-tipo"><option value="cita">Cita (tiene día u hora)</option><option value="tarea">Tarea (algo por hacer)</option></select>
+        <label class="ancho"><span data-t="que"></span> <input id="p-titulo"></label>
+        <label><span data-t="dia"></span> <input id="p-fecha" type="date"></label>
+        <label><span data-t="hora"></span> <input id="p-hora" type="time"></label>
+        <label class="ancho"><span data-t="esUna"></span>
+          <select id="p-tipo"><option value="cita" data-t="opcionCita"></option><option value="tarea" data-t="opcionTarea"></option></select>
         </label>
       </div>
       <p class="resumen-avisos" id="p-avisos"></p>
       <div class="acciones">
-        <button class="principal" id="guardar">Guardar</button>
-        <button class="secundario" id="cancelar">Cancelar</button>
+        <button class="principal" id="guardar" data-t="guardar"></button>
+        <button class="secundario" id="cancelar" data-t="cancelar"></button>
       </div>
     </div>
   </section>
@@ -240,23 +227,146 @@ code { background: var(--azul-claro); padding: 1px 6px; border-radius: 6px; font
 <script type="module">
 import { interpretar } from "./interpretar.js";
 
+// ---------- Idiomas: castellano y catalán ----------
+const TEXTOS = {
+  es: {
+    titulo: "Mi agenda", avisos: "Avisos", avisosActivados: "Avisos activados", activarAvisos: "Activar avisos",
+    otroIdioma: "Català",
+    modoPrueba: "Esto es una prueba: lo que apuntes se queda en este móvil y los avisos solo salen con la página abierta. En la versión instalada llegan aunque el móvil esté bloqueado.",
+    avisosMovil: "Avisos en el móvil", probar: "Mandarme un aviso de prueba",
+    tengoIphone: "Tengo iPhone",
+    pasosIphone: "<li>Abre esta página en <b>Safari</b>.</li><li>Toca el botón <b>Compartir</b> (el cuadrado con la flecha).</li><li>Elige <b>Añadir a pantalla de inicio</b>.</li><li>Abre la agenda desde el icono nuevo y toca <b>Activar avisos</b>.</li>",
+    tengoAndroid: "Tengo Android",
+    pasosAndroid: "<li>Abre esta página en <b>Chrome</b>.</li><li>Toca <b>Activar avisos</b> y acepta.</li><li>Para tenerla como app: menú ⋮ → <b>Añadir a pantalla de inicio</b>.</li>",
+    waTitulo: "Recibir también los avisos por WhatsApp (gratis)",
+    waIntro: "Usa CallMeBot, un servicio gratuito que te manda el WhatsApp a tu propio número. Se activa una vez:",
+    waPasos: "<li>Entra en <b>callmebot.com</b> → WhatsApp y guarda en tus contactos el número que pone allí.</li><li>Mándale por WhatsApp este mensaje: <code>I allow callmebot to send me messages</code></li><li>Te contestará con una clave (<i>apikey</i>). Escríbela aquí:</li>",
+    waNumero: "Tu número con prefijo", waClave: "Clave de CallMeBot", waGuardar: "Guardar WhatsApp",
+    otroMovil: "Usar mi agenda en otro móvil",
+    otroMovilTexto: "Abre este enlace en el otro móvil y verás las mismas cosas. No se lo pases a nadie más.",
+    copiarEnlace: "Copiar enlace",
+    pregunta: "¿Qué tienes que recordar?", ejemploFrase: "Cita médico mañana a las 10", hablar: "Hablar",
+    pistaVoz: "Toca el micrófono y dilo como se lo dirías a alguien.",
+    pistaTeclado: "Para dictar, toca el micrófono de tu teclado y habla.",
+    escuchando: "Te escucho…", errorMicro: "No he podido usar el micrófono. Puedes usar el micrófono del teclado.",
+    ejemplos: ["Cita médico mañana a las 10", "Reunión en 1 hora", "Taller el jueves", "Tengo que comprar pan"],
+    que: "Qué", dia: "Día", hora: "Hora", esUna: "Es una", opcionCita: "Cita (tiene día u hora)", opcionTarea: "Tarea (algo por hacer)",
+    guardar: "Guardar", cancelar: "Cancelar", recordatorio: "Recordatorio",
+    sePaso: "Se te pasó", sinFecha: "Tareas sin fecha", hoy: "Hoy", manana: "Mañana",
+    nadaHoy: "No tienes nada para hoy. ¿Quieres apuntar algo?", todoElDia: "todo el día",
+    marcarHecha: "Marcar como hecha", marcarNoHecha: "Marcar como no hecha", borrar: "Borrar", borrarPregunta: "¿Borrar?",
+    avisoSinFecha: "Sin fecha: te lo recordaré por la mañana y por la noche hasta que lo marques como hecho.",
+    teAvisare: (lista) => `Te avisaré ${lista.join(" y ")}.`, horaPasada: "Esa hora ya ha pasado.",
+    hoyMin: "hoy", mananaMin: "mañana", el: "el", aLas: "a las",
+    apuntado: "Apuntado ✅", noGuardado: "No se ha guardado", sinConexion: "Parece que no hay conexión. Inténtalo otra vez en un momento.",
+    noCarga: "No se ha podido cargar la agenda", revisaConexion: "Revisa la conexión y vuelve a abrirla.",
+    copiado: "Copiado", pegalo: "Pégalo en el otro móvil.",
+    demoEstado: "En esta prueba los avisos salen como un mensaje en la página, solo mientras está abierta.",
+    soloInstalada: "Solo en la versión instalada", demoWa: "En la prueba no se pueden mandar WhatsApp.",
+    avisoPrueba: "🔔 Aviso de prueba", asiLlegan: "Así te llegarán los recordatorios.",
+    noSoportaIphone: "Así no te pueden llegar avisos. Abre la agenda en Safari, añádela a la pantalla de inicio y ábrela desde el icono nuevo. Te lo explico aquí debajo.",
+    noSoportaAndroid: "Así no te pueden llegar avisos. Abre la agenda en Chrome escribiendo la dirección. Te lo explico aquí debajo.",
+    activados: "Los avisos están activados en este móvil.",
+    tocaBoton: "Toca el botón para que la agenda te avise aunque el móvil esté bloqueado.",
+    dijisteNo: "Has dicho que no a los avisos. Para cambiarlo, ve a los ajustes del navegador → Notificaciones.",
+    listo: "Listo. Los avisos están activados en este móvil.", errorActivar: "No se han podido activar los avisos: ",
+    enviado: "Enviado", llegara: "En unos segundos te llegará el aviso.",
+    primeroActiva: "Primero activa los avisos", tocaActivar: "Toca «Activar avisos» y acepta el permiso.",
+    noSalido: "El aviso no ha salido", movil: "Móvil", noEnviar: "No se ha podido enviar", otraVez: "Inténtalo otra vez en un momento",
+    waGuardado: "WhatsApp guardado. Usa «Mandarme un aviso de prueba» para comprobarlo.", waQuitado: "WhatsApp quitado.",
+    errorPreparar: "No se han podido preparar los avisos: ", esHoy: "Es hoy", aLasMay: "A las",
+    ejemplosDemo: ["Recoger a Lucía del cole (ejemplo)", "Dentista (ejemplo)", "Comprar pan (ejemplo)"],
+    dias: ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"],
+    meses: ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"],
+    fecha: (dia, n, mes) => `${dia} ${n} de ${mes}`, voz: "es-ES",
+  },
+  ca: {
+    titulo: "La meva agenda", avisos: "Avisos", avisosActivados: "Avisos activats", activarAvisos: "Activa els avisos",
+    otroIdioma: "Castellano",
+    modoPrueba: "Això és una prova: el que apuntis es queda en aquest mòbil i els avisos només surten amb la pàgina oberta. A la versió instal·lada arriben encara que el mòbil estigui bloquejat.",
+    avisosMovil: "Avisos al mòbil", probar: "Envia'm un avís de prova",
+    tengoIphone: "Tinc iPhone",
+    pasosIphone: "<li>Obre aquesta pàgina amb <b>Safari</b>.</li><li>Toca el botó <b>Comparteix</b> (el quadrat amb la fletxa).</li><li>Tria <b>Afegeix a la pantalla d'inici</b>.</li><li>Obre l'agenda des de la icona nova i toca <b>Activa els avisos</b>.</li>",
+    tengoAndroid: "Tinc Android",
+    pasosAndroid: "<li>Obre aquesta pàgina amb <b>Chrome</b>.</li><li>Toca <b>Activa els avisos</b> i accepta.</li><li>Per tenir-la com una app: menú ⋮ → <b>Afegeix a la pantalla d'inici</b>.</li>",
+    waTitulo: "Rebre també els avisos per WhatsApp (gratis)",
+    waIntro: "Fes servir CallMeBot, un servei gratuït que t'envia el WhatsApp al teu propi número. S'activa una sola vegada:",
+    waPasos: "<li>Entra a <b>callmebot.com</b> → WhatsApp i desa als contactes el número que hi posa.</li><li>Envia-li per WhatsApp aquest missatge: <code>I allow callmebot to send me messages</code></li><li>Et respondrà amb una clau (<i>apikey</i>). Escriu-la aquí:</li>",
+    waNumero: "El teu número amb prefix", waClave: "Clau de CallMeBot", waGuardar: "Desa el WhatsApp",
+    otroMovil: "Fer servir la meva agenda en un altre mòbil",
+    otroMovilTexto: "Obre aquest enllaç a l'altre mòbil i hi veuràs les mateixes coses. No el passis a ningú més.",
+    copiarEnlace: "Copia l'enllaç",
+    pregunta: "Què has de recordar?", ejemploFrase: "Cita metge demà a les 10", hablar: "Parlar",
+    pistaVoz: "Toca el micròfon i digues-ho com ho diries a algú.",
+    pistaTeclado: "Per dictar, toca el micròfon del teclat i parla.",
+    escuchando: "T'escolto…", errorMicro: "No he pogut fer servir el micròfon. Pots fer servir el micròfon del teclat.",
+    ejemplos: ["Cita metge demà a les 10", "Reunió d'aquí a una hora", "Taller dijous", "He de comprar pa"],
+    que: "Què", dia: "Dia", hora: "Hora", esUna: "És una", opcionCita: "Cita (té dia o hora)", opcionTarea: "Tasca (una cosa per fer)",
+    guardar: "Desa", cancelar: "Cancel·la", recordatorio: "Recordatori",
+    sePaso: "Se t'ha passat", sinFecha: "Tasques sense data", hoy: "Avui", manana: "Demà",
+    nadaHoy: "No tens res per avui. Vols apuntar alguna cosa?", todoElDia: "tot el dia",
+    marcarHecha: "Marca-la com a feta", marcarNoHecha: "Marca-la com a no feta", borrar: "Esborra", borrarPregunta: "Esborrar?",
+    avisoSinFecha: "Sense data: t'ho recordaré al matí i al vespre fins que ho marquis com a fet.",
+    teAvisare: (lista) => `T'avisaré ${lista.join(" i ")}.`, horaPasada: "Aquesta hora ja ha passat.",
+    hoyMin: "avui", mananaMin: "demà", el: "el", aLas: "a les",
+    apuntado: "Apuntat ✅", noGuardado: "No s'ha desat", sinConexion: "Sembla que no hi ha connexió. Torna-ho a provar d'aquí a una estona.",
+    noCarga: "No s'ha pogut carregar l'agenda", revisaConexion: "Revisa la connexió i torna-la a obrir.",
+    copiado: "Copiat", pegalo: "Enganxa'l a l'altre mòbil.",
+    demoEstado: "En aquesta prova els avisos surten com un missatge a la pàgina, només mentre està oberta.",
+    soloInstalada: "Només a la versió instal·lada", demoWa: "A la prova no es poden enviar WhatsApp.",
+    avisoPrueba: "🔔 Avís de prova", asiLlegan: "Així t'arribaran els recordatoris.",
+    noSoportaIphone: "Així no et poden arribar avisos. Obre l'agenda amb Safari, afegeix-la a la pantalla d'inici i obre-la des de la icona nova. T'ho explico aquí sota.",
+    noSoportaAndroid: "Així no et poden arribar avisos. Obre l'agenda amb Chrome escrivint l'adreça. T'ho explico aquí sota.",
+    activados: "Els avisos estan activats en aquest mòbil.",
+    tocaBoton: "Toca el botó perquè l'agenda t'avisi encara que el mòbil estigui bloquejat.",
+    dijisteNo: "Has dit que no als avisos. Per canviar-ho, ves a la configuració del navegador → Notificacions.",
+    listo: "Fet. Els avisos estan activats en aquest mòbil.", errorActivar: "No s'han pogut activar els avisos: ",
+    enviado: "Enviat", llegara: "D'aquí a uns segons t'arribarà l'avís.",
+    primeroActiva: "Primer activa els avisos", tocaActivar: "Toca «Activa els avisos» i accepta el permís.",
+    noSalido: "L'avís no ha sortit", movil: "Mòbil", noEnviar: "No s'ha pogut enviar", otraVez: "Torna-ho a provar d'aquí a una estona",
+    waGuardado: "WhatsApp desat. Fes servir «Envia'm un avís de prova» per comprovar-ho.", waQuitado: "WhatsApp tret.",
+    errorPreparar: "No s'han pogut preparar els avisos: ", esHoy: "És avui", aLasMay: "A les",
+    ejemplosDemo: ["Recollir la Lucía de l'escola (exemple)", "Dentista (exemple)", "Comprar pa (exemple)"],
+    dias: ["diumenge", "dilluns", "dimarts", "dimecres", "dijous", "divendres", "dissabte"],
+    meses: ["gener", "febrer", "març", "abril", "maig", "juny", "juliol", "agost", "setembre", "octubre", "novembre", "desembre"],
+    fecha: (dia, n, mes) => `${dia} ${n} ${/^[aeiou]/.test(mes) ? "d'" : "de "}${mes}`, voz: "ca-ES",
+  },
+};
+
+const guardarLocal = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+const leerLocal = (k, def) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : def; } catch { return def; } };
+
+let idioma = leerLocal("idioma", null) || ((navigator.language || "").toLowerCase().startsWith("ca") ? "ca" : "es");
+const t = (clave) => TEXTOS[idioma][clave];
+
+function traducir() {
+  document.documentElement.lang = idioma;
+  document.title = t("titulo");
+  document.querySelectorAll("[data-t]").forEach((el) => (el.textContent = t(el.dataset.t)));
+  document.querySelectorAll("[data-t-html]").forEach((el) => (el.innerHTML = t(el.dataset.tHtml)));
+  document.querySelectorAll("[data-t-ph]").forEach((el) => (el.placeholder = t(el.dataset.tPh)));
+  document.querySelectorAll("[data-t-aria]").forEach((el) => el.setAttribute("aria-label", t(el.dataset.tAria)));
+  $("cambiar-idioma").textContent = t("otroIdioma");
+  $("cambiar-idioma").lang = idioma === "es" ? "ca" : "es";
+  $("pista-voz").textContent = Reconocimiento ? t("pistaVoz") : t("pistaTeclado");
+  $("ejemplos").replaceChildren(...t("ejemplos").map((e) => { const b = document.createElement("button"); b.textContent = e; return b; }));
+}
+
 const $ = (id) => document.getElementById(id);
-const DIAS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
-const MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
 const dos = (n) => String(n).padStart(2, "0");
 const isoHoy = (d = new Date()) => `${d.getFullYear()}-${dos(d.getMonth() + 1)}-${dos(d.getDate())}`;
 const sumarDias = (iso, n) => { const [y, m, d] = iso.split("-").map(Number); return isoHoy(new Date(y, m - 1, d + n)); };
 const aDate = (fecha, hora = "00:00") => { const [y, m, d] = fecha.split("-").map(Number); const [h, mi] = hora.split(":").map(Number); return new Date(y, m - 1, d, h, mi); };
-const bonita = (iso) => { const d = aDate(iso); return `${DIAS[d.getDay()]} ${d.getDate()} de ${MESES[d.getMonth()]}`; };
-
-const guardarLocal = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
-const leerLocal = (k, def) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : def; } catch { return def; } };
+const bonita = (iso) => { const d = aDate(iso); return t("fecha")(t("dias")[d.getDay()], d.getDate(), t("meses")[d.getMonth()]); };
 
 // Cada persona tiene un código secreto propio; con él se abre su agenda en otro móvil.
 const enlace = new URLSearchParams(location.search).get("u");
 let uid = (enlace && /^[a-z0-9]{16,64}$/.test(enlace) ? enlace : null) || leerLocal("uid", null);
 if (!uid) uid = [...crypto.getRandomValues(new Uint8Array(32))].map((b) => "abcdefghijklmnopqrstuvwxyz0123456789"[b % 36]).join("");
 guardarLocal("uid", uid);
+
+const Reconocimiento = window.SpeechRecognition || window.webkitSpeechRecognition;
+traducir();
 
 // ---------- Dónde se guardan las cosas: en el servidor gratuito o, en modo prueba, en este móvil ----------
 const api = async (ruta, opciones = {}) => {
@@ -296,19 +406,20 @@ const almacen = conServidor ? {
 // Unos ejemplos para que la prueba no empiece vacía.
 function ejemplos() {
   const hoy = isoHoy();
+  const [a, b, c] = t("ejemplosDemo");
   const l = [
-    { id: 1, tipo: "cita", titulo: "Recoger a Lucía del cole (ejemplo)", fecha: hoy, hora: "17:00", hecho: 0 },
-    { id: 2, tipo: "cita", titulo: "Dentista (ejemplo)", fecha: sumarDias(hoy, 1), hora: "10:30", hecho: 0 },
-    { id: 3, tipo: "tarea", titulo: "Comprar pan (ejemplo)", fecha: null, hora: null, hecho: 0 },
+    { id: 1, tipo: "cita", titulo: a, fecha: hoy, hora: "17:00", hecho: 0 },
+    { id: 2, tipo: "cita", titulo: b, fecha: sumarDias(hoy, 1), hora: "10:30", hecho: 0 },
+    { id: 3, tipo: "tarea", titulo: c, fecha: null, hora: null, hecho: 0 },
   ];
-  l.forEach((i) => (i.avisos = avisosDe(i).map((a) => a.toISOString())));
+  l.forEach((i) => (i.avisos = avisosDe(i).map((x) => x.toISOString())));
   return l;
 }
 
 // ---------- Pintar la agenda ----------
 let items = [];
 async function cargar() {
-  try { items = await almacen.lista(); } catch { mostrarToast("No se ha podido cargar la agenda", "Revisa la conexión y vuelve a abrirla."); }
+  try { items = await almacen.lista(); } catch { mostrarToast(t("noCarga"), t("revisaConexion")); }
   pintar();
 }
 
@@ -339,10 +450,10 @@ function pintar() {
     }
     cont.append(s);
   };
-  if (pasadas.length) seccion("Se te pasó", pasadas, "");
+  if (pasadas.length) seccion(t("sePaso"), pasadas, "");
   for (const c of claves) {
-    const nombre = c === "sin-fecha" ? "Tareas sin fecha" : c === hoy ? "Hoy" : c === sumarDias(hoy, 1) ? "Mañana" : bonita(c);
-    seccion(nombre, grupos.get(c), c === hoy ? "No tienes nada para hoy. ¿Quieres apuntar algo?" : "");
+    const nombre = c === "sin-fecha" ? t("sinFecha") : c === hoy ? t("hoy") : c === sumarDias(hoy, 1) ? t("manana") : bonita(c);
+    seccion(nombre, grupos.get(c), c === hoy ? t("nadaHoy") : "");
   }
 }
 
@@ -351,26 +462,26 @@ function fila(i) {
   if (i.hecho) li.classList.add("hecho");
   if (i.tipo === "tarea") {
     const b = document.createElement("button");
-    b.className = "marcar"; b.setAttribute("aria-label", i.hecho ? "Marcar como no hecha" : "Marcar como hecha");
+    b.className = "marcar"; b.setAttribute("aria-label", i.hecho ? t("marcarNoHecha") : t("marcarHecha"));
     b.innerHTML = i.hecho ? '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" stroke="currentColor" stroke-width="2.4" fill="none"/></svg>' : "";
     b.onclick = async () => { i.hecho = i.hecho ? 0 : 1; await almacen.marcar(i.id, i.hecho); pintar(); };
     li.append(b);
   } else {
     const h = document.createElement("span");
     h.className = "hora" + (i.hora ? "" : " vacia");
-    h.textContent = i.hora || "todo el día";
+    h.textContent = i.hora || t("todoElDia");
     if (!i.hora) h.style.fontSize = "0.8rem";
     li.append(h);
   }
-  const t = document.createElement("span"); t.className = "titulo"; t.textContent = i.titulo;
+  const titulo = document.createElement("span"); titulo.className = "titulo"; titulo.textContent = i.titulo;
   const borrar = document.createElement("button");
-  borrar.className = "borrar"; borrar.setAttribute("aria-label", `Borrar ${i.titulo}`); borrar.textContent = "×";
+  borrar.className = "borrar"; borrar.setAttribute("aria-label", `${t("borrar")} ${i.titulo}`); borrar.textContent = "×";
   let pendiente = false;
   borrar.onclick = async () => {
-    if (!pendiente) { pendiente = true; borrar.textContent = "¿Borrar?"; borrar.style.width = "auto"; borrar.style.fontSize = "0.9rem"; setTimeout(() => { pendiente = false; borrar.textContent = "×"; borrar.style = ""; }, 3000); return; }
+    if (!pendiente) { pendiente = true; borrar.textContent = t("borrarPregunta"); borrar.style.width = "auto"; borrar.style.fontSize = "0.9rem"; setTimeout(() => { pendiente = false; borrar.textContent = "×"; borrar.style = ""; }, 3000); return; }
     await almacen.borrar(i.id); items = items.filter((x) => x !== i); pintar();
   };
-  li.append(t, borrar);
+  li.append(titulo, borrar);
   return li;
 }
 
@@ -385,15 +496,14 @@ function entender() {
 }
 function itemPrevio() {
   const fecha = $("p-fecha").value || null;
-  return { titulo: $("p-titulo").value.trim() || "Recordatorio", fecha, hora: fecha ? $("p-hora").value || null : null, tipo: $("p-tipo").value };
+  return { titulo: $("p-titulo").value.trim() || t("recordatorio"), fecha, hora: fecha ? $("p-hora").value || null : null, tipo: $("p-tipo").value };
 }
 function explicarAvisos() {
   const it = itemPrevio();
   const av = avisosDe(it);
   const hoy = isoHoy();
-  const cuando = (d) => { const f = isoHoy(d); return `${f === hoy ? "hoy" : f === sumarDias(hoy, 1) ? "mañana" : "el " + bonita(f)} a las ${dos(d.getHours())}:${dos(d.getMinutes())}`; };
-  $("p-avisos").textContent = !it.fecha ? "Sin fecha: te lo recordaré por la mañana y por la noche hasta que lo marques como hecho."
-    : av.length ? `Te avisaré ${av.map(cuando).join(" y ")}.` : "Esa hora ya ha pasado.";
+  const cuando = (d) => { const f = isoHoy(d); return `${f === hoy ? t("hoyMin") : f === sumarDias(hoy, 1) ? t("mananaMin") : t("el") + " " + bonita(f)} ${t("aLas")} ${dos(d.getHours())}:${dos(d.getMinutes())}`; };
+  $("p-avisos").textContent = !it.fecha ? t("avisoSinFecha") : av.length ? t("teAvisare")(av.map(cuando)) : t("horaPasada");
 }
 ["p-fecha", "p-hora", "p-tipo"].forEach((id) => $(id).addEventListener("input", explicarAvisos));
 
@@ -408,30 +518,28 @@ $("guardar").onclick = async () => {
     items.push(nuevo);
     $("previa").hidden = true; $("frase").value = "";
     pintar();
-    mostrarToast("Apuntado ✅", `${it.titulo}${it.fecha ? ", " + bonita(it.fecha) : ""}${it.hora ? " a las " + it.hora : ""}`);
-  } catch { mostrarToast("No se ha guardado", "Parece que no hay conexión. Inténtalo otra vez en un momento."); }
+    mostrarToast(t("apuntado"), `${it.titulo}${it.fecha ? ", " + bonita(it.fecha) : ""}${it.hora ? ` ${t("aLas")} ${it.hora}` : ""}`);
+  } catch { mostrarToast(t("noGuardado"), t("sinConexion")); }
 };
 
 // ---------- Hablar ----------
-const Reconocimiento = window.SpeechRecognition || window.webkitSpeechRecognition;
-if (!Reconocimiento) $("pista-voz").textContent = "Para dictar, toca el micrófono de tu teclado y habla.";
 $("microfono").onclick = () => {
   if (!Reconocimiento) { $("frase").focus(); return; }
   const rec = new Reconocimiento();
-  rec.lang = "es-ES"; rec.interimResults = true;
+  rec.lang = t("voz"); rec.interimResults = true;
   $("microfono").classList.add("escuchando");
-  $("pista-voz").textContent = "Te escucho…";
+  $("pista-voz").textContent = t("escuchando");
   rec.onresult = (e) => { $("frase").value = [...e.results].map((r) => r[0].transcript).join(" "); };
-  rec.onerror = () => { $("pista-voz").textContent = "No he podido usar el micrófono. Puedes usar el micrófono del teclado."; };
-  rec.onend = () => { $("microfono").classList.remove("escuchando"); if ($("pista-voz").textContent === "Te escucho…") $("pista-voz").textContent = "Toca el micrófono y dilo como se lo dirías a alguien."; entender(); };
+  rec.onerror = () => { $("pista-voz").textContent = t("errorMicro"); };
+  rec.onend = () => { $("microfono").classList.remove("escuchando"); if ($("pista-voz").textContent === t("escuchando")) $("pista-voz").textContent = t("pistaVoz"); entender(); };
   try { rec.start(); } catch { rec.onerror(); }
 };
 
 // ---------- Avisos ----------
 function mostrarToast(titulo, texto) {
-  const t = $("toast");
-  t.innerHTML = ""; const s = document.createElement("strong"); s.textContent = titulo; t.append(s, document.createTextNode(texto));
-  t.hidden = false; clearTimeout(t._t); t._t = setTimeout(() => (t.hidden = true), 6000);
+  const toast = $("toast");
+  toast.innerHTML = ""; const s = document.createElement("strong"); s.textContent = titulo; toast.append(s, document.createTextNode(texto));
+  toast.hidden = false; clearTimeout(toast._t); toast._t = setTimeout(() => (toast.hidden = true), 6000);
   try { navigator.vibrate?.([200, 100, 200]); } catch {}
 }
 
@@ -439,15 +547,28 @@ $("abrir-panel").onclick = () => { $("panel").hidden = !$("panel").hidden; };
 const enlacePersonal = `${location.origin}${location.pathname}?u=${uid}`;
 $("enlace-personal").textContent = enlacePersonal;
 $("copiar-enlace").onclick = async () => {
-  try { await navigator.clipboard.writeText(enlacePersonal); mostrarToast("Copiado", "Pégalo en el otro móvil."); }
+  try { await navigator.clipboard.writeText(enlacePersonal); mostrarToast(t("copiado"), t("pegalo")); }
   catch { const r = document.createRange(); r.selectNodeContents($("enlace-personal")); getSelection().removeAllRanges(); getSelection().addRange(r); }
 };
 
-function estadoAvisos(activo, texto) {
+// El estado de los avisos se guarda como clave de texto para poder repintarlo al cambiar de idioma.
+let estadoActual = { activo: false, clave: null, extra: "" };
+function estadoAvisos(activo, clave, extra = "") {
+  estadoActual = { activo, clave, extra };
   $("punto").classList.toggle("activo", activo);
-  $("texto-avisos").textContent = activo ? "Avisos activados" : "Activar avisos";
-  $("estado-push").textContent = texto;
+  $("texto-avisos").textContent = conServidor ? (activo ? t("avisosActivados") : t("activarAvisos")) : t("avisos");
+  $("estado-push").textContent = clave ? t(clave) + extra : "";
 }
+
+$("cambiar-idioma").onclick = () => {
+  idioma = idioma === "es" ? "ca" : "es";
+  guardarLocal("idioma", idioma);
+  traducir();
+  pintar();
+  estadoAvisos(estadoActual.activo, estadoActual.clave, estadoActual.extra);
+  if (!$("previa").hidden) explicarAvisos();
+  if (conServidor) api("/usuario", { method: "POST", body: JSON.stringify({ uid, idioma }) }).catch(() => {});
+};
 
 const b64aBytes = (s) => Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((s.length + 3) % 4)), (c) => c.charCodeAt(0));
 let registro = null;
@@ -455,23 +576,20 @@ let registro = null;
 async function prepararAvisos() {
   if (!conServidor) {
     $("aviso-modo").hidden = false;
-    estadoAvisos(false, "En esta prueba los avisos salen como un mensaje en la página, solo mientras está abierta.");
-    $("texto-avisos").textContent = "Avisos";
+    estadoAvisos(false, "demoEstado");
     $("activar-push").hidden = true;
-    $("guardar-wa").onclick = () => mostrarToast("Solo en la versión instalada", "En la prueba no se pueden mandar WhatsApp.");
-    $("probar").onclick = () => mostrarToast("🔔 Aviso de prueba", "Así te llegarán los recordatorios.");
+    $("guardar-wa").onclick = () => mostrarToast(t("soloInstalada"), t("demoWa"));
+    $("probar").onclick = () => mostrarToast(t("avisoPrueba"), t("asiLlegan"));
     setInterval(revisarAvisosLocales, 20000);
     return;
   }
-  const usuario = await api("/usuario", { method: "POST", body: JSON.stringify({ uid, zona: Intl.DateTimeFormat().resolvedOptions().timeZone }) });
+  const usuario = await api("/usuario", { method: "POST", body: JSON.stringify({ uid, idioma, zona: Intl.DateTimeFormat().resolvedOptions().timeZone }) });
   if (usuario.whatsapp) $("wa-tel").value = usuario.whatsapp;
   const soporta = "serviceWorker" in navigator && "PushManager" in window;
   if (soporta) registro = await navigator.serviceWorker.register(`sw.js?uid=${uid}`);
   const esIphone = /iphone|ipad/i.test(navigator.userAgent);
   if (!soporta) {
-    estadoAvisos(!!usuario.whatsapp, esIphone
-      ? "Así no te pueden llegar avisos. Abre la agenda en Safari, añádela a la pantalla de inicio y ábrela desde el icono nuevo. Te lo explico aquí debajo."
-      : "Así no te pueden llegar avisos. Abre la agenda en Chrome escribiendo la dirección. Te lo explico aquí debajo.");
+    estadoAvisos(!!usuario.whatsapp, esIphone ? "noSoportaIphone" : "noSoportaAndroid");
     $("estado-push").classList.add("importante");
     $(esIphone ? "det-iphone" : "det-android").open = true;
     $("activar-push").hidden = true;
@@ -481,36 +599,36 @@ async function prepararAvisos() {
     const sub = await registro.pushManager.getSubscription();
     if (sub && Notification.permission === "granted") {
       await api("/usuario", { method: "POST", body: JSON.stringify({ uid, suscripcion: sub.toJSON() }) });
-      estadoAvisos(true, "Los avisos están activados en este móvil.");
+      estadoAvisos(true, "activados");
       $("activar-push").hidden = true;
     } else {
-      estadoAvisos(usuario.push || !!usuario.whatsapp, "Toca el botón para que la agenda te avise aunque el móvil esté bloqueado.");
+      estadoAvisos(usuario.push || !!usuario.whatsapp, "tocaBoton");
       if (!usuario.push && !usuario.whatsapp) $("panel").hidden = false;
     }
   }
   $("activar-push").onclick = async () => {
     try {
       const permiso = await Notification.requestPermission();
-      if (permiso !== "granted") { estadoAvisos(false, "Has dicho que no a los avisos. Para cambiarlo, ve a los ajustes del navegador → Notificaciones."); return; }
+      if (permiso !== "granted") { estadoAvisos(false, "dijisteNo"); return; }
       const { clave } = await api("/vapid");
       const sub = await registro.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64aBytes(clave) });
       await api("/usuario", { method: "POST", body: JSON.stringify({ uid, suscripcion: sub.toJSON() }) });
-      estadoAvisos(true, "Listo. Los avisos están activados en este móvil.");
+      estadoAvisos(true, "listo");
       $("activar-push").hidden = true;
-    } catch (e) { estadoAvisos(false, "No se han podido activar los avisos: " + e.message); }
+    } catch (e) { estadoAvisos(false, "errorActivar", e.message); }
   };
   $("probar").onclick = async () => {
     try {
       const r = await api("/probar", { method: "POST", body: JSON.stringify({ uid }) });
-      if (r.push === "ok" || r.whatsapp === "ok") mostrarToast("Enviado", "En unos segundos te llegará el aviso.");
-      else if (r.push === "sin activar" && r.whatsapp === "sin activar") mostrarToast("Primero activa los avisos", "Toca «Activar avisos» y acepta el permiso.");
-      else mostrarToast("El aviso no ha salido", `Móvil: ${r.push}. WhatsApp: ${r.whatsapp}.`);
+      if (r.push === "ok" || r.whatsapp === "ok") mostrarToast(t("enviado"), t("llegara"));
+      else if (r.push === "sin activar" && r.whatsapp === "sin activar") mostrarToast(t("primeroActiva"), t("tocaActivar"));
+      else mostrarToast(t("noSalido"), `${t("movil")}: ${r.push}. WhatsApp: ${r.whatsapp}.`);
     }
-    catch (e) { mostrarToast("No se ha podido enviar", "Inténtalo otra vez en un momento (" + e.message + ")."); }
+    catch (e) { mostrarToast(t("noEnviar"), `${t("otraVez")} (${e.message}).`); }
   };
   $("guardar-wa").onclick = async () => {
     const r = await api("/usuario", { method: "POST", body: JSON.stringify({ uid, whatsapp: { telefono: $("wa-tel").value, clave: $("wa-clave").value } }) });
-    estadoAvisos(true, r.whatsapp ? "WhatsApp guardado. Usa «Mandarme un aviso de prueba» para comprobarlo." : "WhatsApp quitado.");
+    estadoAvisos(true, r.whatsapp ? "waGuardado" : "waQuitado");
   };
 }
 
@@ -521,7 +639,7 @@ function revisarAvisosLocales() {
   for (const i of items) {
     const vencidos = (i.avisos || []).filter((a) => Date.parse(a) <= ahora);
     if (!vencidos.length) continue;
-    if (!i.hecho && vencidos.some((a) => Date.parse(a) > ahora - 5 * 60000)) mostrarToast(`⏰ ${i.titulo}`, i.hora ? `A las ${i.hora}` : "Es hoy");
+    if (!i.hecho && vencidos.some((a) => Date.parse(a) > ahora - 5 * 60000)) mostrarToast(`⏰ ${i.titulo}`, i.hora ? `${t("aLasMay")} ${i.hora}` : t("esHoy"));
     i.avisos = i.avisos.filter((a) => Date.parse(a) > ahora);
     cambiado = true;
   }
@@ -529,7 +647,7 @@ function revisarAvisosLocales() {
 }
 
 await cargar();
-prepararAvisos().catch((e) => estadoAvisos(false, "No se han podido preparar los avisos: " + e.message));
+prepararAvisos().catch((e) => estadoAvisos(false, "errorPreparar", e.message));
 </script>
 </body>
 </html>
