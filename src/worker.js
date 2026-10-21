@@ -139,7 +139,7 @@ async function cadaMinuto(env) {
 const json = (datos, estado = 200) => new Response(JSON.stringify(datos), {
   status: estado, headers: { "Content-Type": "application/json; charset=utf-8" },
 });
-const UID_VALIDO = /^[a-z0-9]{24,64}$/;
+const UID_VALIDO = /^[a-z0-9]{16,64}$/;
 const FECHA = /^\d{4}-\d{2}-\d{2}$/;
 const HORA = /^\d{2}:\d{2}$/;
 

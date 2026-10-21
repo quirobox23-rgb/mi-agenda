@@ -252,8 +252,8 @@ const leerLocal = (k, def) => { try { const v = localStorage.getItem(k); return 
 
 // Cada persona tiene un código secreto propio; con él se abre su agenda en otro móvil.
 const enlace = new URLSearchParams(location.search).get("u");
-let uid = (enlace && /^[a-z0-9]{24,64}$/.test(enlace) ? enlace : null) || leerLocal("uid", null);
-if (!uid) uid = [...crypto.getRandomValues(new Uint8Array(20))].map((b) => "abcdefghijklmnopqrstuvwxyz0123456789"[b % 36]).join("");
+let uid = (enlace && /^[a-z0-9]{16,64}$/.test(enlace) ? enlace : null) || leerLocal("uid", null);
+if (!uid) uid = [...crypto.getRandomValues(new Uint8Array(32))].map((b) => "abcdefghijklmnopqrstuvwxyz0123456789"[b % 36]).join("");
 guardarLocal("uid", uid);
 
 // ---------- Dónde se guardan las cosas: en el servidor gratuito o, en modo prueba, en este móvil ----------
