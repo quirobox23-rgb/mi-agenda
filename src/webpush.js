@@ -27,7 +27,7 @@ async function firmaVapid(endpoint, claves, contacto) {
   return `vapid t=${cabecera}.${datos}.${b64url(firma)}, k=${claves.publica}`;
 }
 
-// Devuelve "ok", "caducada" (el móvil ya no acepta avisos) o "error".
+// Devuelve "ok", "caducada" (el móvil ya no acepta avisos) o "error <código> <detalle>".
 export async function enviarPush(suscripcion, claves, contacto) {
   const r = await fetch(suscripcion.endpoint, {
     method: "POST",
@@ -35,13 +35,14 @@ export async function enviarPush(suscripcion, claves, contacto) {
       Authorization: await firmaVapid(suscripcion.endpoint, claves, contacto),
       TTL: "86400",
       Urgency: "high",
-      "Content-Length": "0",
     },
+    body: new Uint8Array(0),
   });
   if (r.status === 404 || r.status === 410) return "caducada";
   if (!r.ok) {
-    console.error("Push rechazado", r.status, await r.text());
-    return "error";
+    const detalle = (await r.text()).slice(0, 150);
+    console.error("Push rechazado", r.status, detalle);
+    return `error ${r.status} ${detalle}`;
   }
   return "ok";
 }

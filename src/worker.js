@@ -65,17 +65,21 @@ function textoAviso(item, zona, ahora) {
 
 async function notificar(env, usuario, titulo, texto) {
   await env.DB.prepare("INSERT INTO bandeja (uid, titulo, texto) VALUES (?, ?, ?)").bind(usuario.uid, titulo, texto).run();
+  const resultado = { push: "sin activar", whatsapp: "sin activar" };
   if (usuario.suscripcion) {
     const origen = (await env.DB.prepare("SELECT valor FROM config WHERE clave = 'origen'").first())?.valor;
     const estado = await enviarPush(JSON.parse(usuario.suscripcion), await clavesVapid(env.DB), origen || "mailto:agenda@example.org");
     if (estado === "caducada") await env.DB.prepare("UPDATE usuarios SET suscripcion = NULL WHERE uid = ?").bind(usuario.uid).run();
+    resultado.push = estado;
   }
   if (usuario.wa_tel && usuario.wa_clave) {
     // CallMeBot: servicio gratuito que manda un WhatsApp a tu propio número.
     const url = `https://api.callmebot.com/whatsapp.php?phone=${encodeURIComponent(usuario.wa_tel)}` +
       `&text=${encodeURIComponent(`⏰ ${titulo}\n${texto}`)}&apikey=${encodeURIComponent(usuario.wa_clave)}`;
-    await fetch(url).catch((e) => console.error("WhatsApp falló", e.message));
+    resultado.whatsapp = await fetch(url).then((r) => (r.ok ? "ok" : `error ${r.status}`))
+      .catch((e) => `error ${e.message}`);
   }
+  return resultado;
 }
 
 // ---------- El reloj: se ejecuta cada minuto ----------
@@ -222,8 +226,7 @@ async function api(request, env, url) {
   }
 
   if (ruta === "/probar" && metodo === "POST") {
-    await notificar(env, usuario, "🔔 Aviso de prueba", "¡Funciona! Así te llegarán los recordatorios.");
-    return json({ ok: true });
+    return json(await notificar(env, usuario, "🔔 Aviso de prueba", "¡Funciona! Así te llegarán los recordatorios."));
   }
 
   return json({ error: "No encontrado" }, 404);
