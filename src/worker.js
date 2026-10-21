@@ -153,6 +153,8 @@ async function api(request, env, url) {
   if (ruta === "/vapid") return json({ clave: (await clavesVapid(db)).publica });
   if (!UID_VALIDO.test(uid || "")) return json({ error: "uid no válido" }, 400);
 
+  // La primera vez que un móvil habla con la agenda se le crea su sitio.
+  await db.prepare("INSERT OR IGNORE INTO usuarios (uid) VALUES (?)").bind(uid).run();
   const usuario = await db.prepare("SELECT * FROM usuarios WHERE uid = ?").bind(uid).first();
   const zona = usuario?.zona || "Europe/Madrid";
 
@@ -173,8 +175,6 @@ async function api(request, env, url) {
     const u = await db.prepare("SELECT suscripcion IS NOT NULL AS push, wa_tel FROM usuarios WHERE uid = ?").bind(uid).first();
     return json({ push: !!u.push, whatsapp: u.wa_tel });
   }
-
-  if (!usuario) return json({ error: "Usuario desconocido" }, 404);
 
   if (ruta === "/items" && metodo === "GET") {
     const { results } = await db.prepare(

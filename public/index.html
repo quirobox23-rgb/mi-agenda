@@ -491,7 +491,10 @@ async function prepararAvisos() {
       $("activar-push").hidden = true;
     } catch (e) { estadoAvisos(false, "No se han podido activar los avisos: " + e.message); }
   };
-  $("probar").onclick = async () => { await api("/probar", { method: "POST", body: JSON.stringify({ uid }) }); mostrarToast("Enviado", "En unos segundos te llegará el aviso."); };
+  $("probar").onclick = async () => {
+    try { await api("/probar", { method: "POST", body: JSON.stringify({ uid }) }); mostrarToast("Enviado", "En unos segundos te llegará el aviso."); }
+    catch (e) { mostrarToast("No se ha podido enviar", "Inténtalo otra vez en un momento (" + e.message + ")."); }
+  };
   $("guardar-wa").onclick = async () => {
     const r = await api("/usuario", { method: "POST", body: JSON.stringify({ uid, whatsapp: { telefono: $("wa-tel").value, clave: $("wa-clave").value } }) });
     estadoAvisos(true, r.whatsapp ? "WhatsApp guardado. Usa «Mandarme un aviso de prueba» para comprobarlo." : "WhatsApp quitado.");
