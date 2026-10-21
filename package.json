@@ -1,0 +1,17 @@
+{
+  "name": "mi-agenda",
+  "version": "1.0.0",
+  "description": "Agenda gratis: apunta por voz y recibe los avisos en el móvil",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "prueba": "node prueba/interpretar.test.mjs"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "wrangler": "^4.151.3"
+  },
+  "private": true,
+  "type": "module"
+}
